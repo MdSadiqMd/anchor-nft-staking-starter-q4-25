@@ -64,16 +64,16 @@ impl<'info> Unstake<'info> {
     pub fn unstake(&mut self) -> Result<()> {
         let current_time = Clock::get()?.unix_timestamp;
         let time_elapsed = current_time - self.stake_account.staked_at;
+        let days_staked = (time_elapsed / 86400) as u32;
 
         require!(
-            time_elapsed >= self.config.freeze_period as i64,
+            time_elapsed >= (self.config.freeze_period as i64) * 86400,
             StakeError::FreezePeriodNotPassed
         );
 
         self.user_account.amount_staked -= 1;
         self.user_account.points += (self.config.points_per_stake as u32)
-            .checked_mul(time_elapsed as u32)
-            .unwrap();
+            .saturating_mul(days_staked);
 
         let signer_seeds: &[&[&[u8]]] = &[&[
             b"stake",

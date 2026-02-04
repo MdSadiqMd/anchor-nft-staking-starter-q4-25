@@ -56,6 +56,8 @@ impl<'info> Claim<'info> {
 
         let signer_seeds: &[&[&[u8]]] = &[&[b"config", &[self.config.bump]]];
 
+        let amount = (points as u64).saturating_mul(10u64.pow(self.reward_mint.decimals as u32));
+
         mint_to(
             CpiContext::new_with_signer(
                 self.token_program.to_account_info(),
@@ -66,7 +68,7 @@ impl<'info> Claim<'info> {
                 },
                 signer_seeds,
             ),
-            points as u64 * 10u64.pow(self.reward_mint.decimals as u32),
+            amount,
         )?;
 
         Ok(())
